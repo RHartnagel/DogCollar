@@ -6,14 +6,33 @@ uart = UART(0, 9600)
 
 class LocationInfo:
     def __init__(self, time, lat, dLat, long, dLong):
-        self.time = time
-        self.lat = lat
-        self.dLat = dLat
-        self.long = long
-        self.dLong = dLong
+        self.time = convertTime(time)
+        self.lat = convertLat(lat, dLat)
+        self.long = convertLong(long, dLong)
+        
+    def convertLat(self, rawLat, dir):
+        degrees = int(rawLat[:2])
+        minutes = float(rawLat[2:])
+        decimalDegrees = degrees + minutes / 60
+        if dir == 'S':
+            decimalDegrees *= -1
+        print(decimalDegrees)
+        return decimalDegrees
+
+    def convertLong(self, rawLong, dir):
+        degrees = int(rawLong[:3])
+        minutes = float(rawLong[3:])
+        decimalDegrees = degrees + minutes / 60
+        if dir == 'S':
+            decimalDegrees *= -1
+        print(decimalDegrees)
+        return decimalDegrees
+
+    def convertTime(self, rawTime):
+        print()
 
     def print(self):
-        print(f"Time: {self.time}, Lat: {self.lat} {self.dLat}, Long: {self.long} {self.dLong}")
+        print(f"Time: {self.time}, Lat: {self.lat}, Long: {self.long}")
 
 def filterLines(raw_line):
     if raw_line:
@@ -30,10 +49,22 @@ def filterLines(raw_line):
         return "", False
 
 def convertLat(rawLat, dir):
-    print()        
+    degrees = int(rawLat[:2])
+    minutes = float(rawLat[2:])
+    decimalDegrees = degrees + minutes / 60
+    if dir == 'S':
+        decimalDegrees *= -1
+    print(decimalDegrees)
+    return decimalDegrees
 
 def convertLong(rawLong, dir):
-    print()     
+    degrees = int(rawLong[:3])
+    minutes = float(rawLong[3:])
+    decimalDegrees = degrees + minutes / 60
+    if dir == 'S':
+        decimalDegrees *= -1
+    print(decimalDegrees)
+    return decimalDegrees    
 
 def convertTime(rawTime):
     print()     
