@@ -115,14 +115,17 @@ class LocationInfo:
 
 
 while True:
-    time.sleep(60)
     raw_line = uart.readline()
     message, truth = filterLines(raw_line)
     if not truth:
+        time.sleep(0.1)
         continue
     try:
         info = parseLine(message)
     except Exception as e:
         print(f"got error: {e}")
+        time.sleep(0.1)
         continue
     info.writeDataToFile("locations")
+    print("added to file")
+    time.sleep(10)
