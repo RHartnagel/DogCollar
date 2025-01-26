@@ -4,8 +4,15 @@ import time
 
 uart = UART(0, 9600)
 
+def isNumber(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
 def format(value, fmt):
-    if fmt.endswith('b'):  # Handle binary formatting
+    if fmt.endswith('b'):
         bit_length = int(fmt[:-1])
         binary_str = bin(value)[2:]
         return '0' * (bit_length - len(binary_str)) + binary_str
@@ -27,23 +34,17 @@ def filterLines(raw_line):
         return "", False
 
 def parseLine(lines):
-    if lines[0] == "$GNGGA" and all(lines[i] for i in [1, 2, 3, 4, 5]):
+    if lines[0] == "$GNGGA" and all(lines[i] for i in [1, 2, 3, 4, 5]) and all(isNumber(lines[i]) for i in [1, 2, 4]):
         info = LocationInfo(lines[1], lines[2], lines[3], lines[4], lines[5])
         return info
-    elif lines[0] == "$GNGLL" and all(lines[i] for i in [1, 2, 3, 4, 5]):
+    elif lines[0] == "$GNGLL" and all(lines[i] for i in [1, 2, 3, 4, 5]) and all(isNumber(lines[i]) for i in [5, 1, 3]):
         info = LocationInfo(lines[5], lines[1], lines[2], lines[3], lines[4])
         return info
-    elif lines[0] == "$GNRMC" and all(lines[i] for i in [1, 3, 4, 5, 6]):
+    elif lines[0] == "$GNRMC" and all(lines[i] for i in [1, 3, 4, 5, 6]) and all(isNumber(lines[i]) for i in [1, 3, 5]):
         info = LocationInfo(lines[1], lines[3], lines[4], lines[5], lines[6])
         return info
     else:
         raise Exception("Bad Input/Warming Up")
-
-def createSendPacket(lat, long):
-    sendLat = int(lat * 1e5)
-    sendLong = int(long * 1e5)
-    timeNow = int(time.time())
-    return struct.pack("!iiI", sendLat, sendLong, int(timeNow))
 
 class LocationInfo:
     def __init__(self, time, lat, dLat, long, dLong):
@@ -95,15 +96,26 @@ class LocationInfo:
         else:
             return format(0, '01b')
 
+    def binaryData(self):
+        binString = "0000" + self.timeToBinary() + self.latToBinary() + self.latDirBinary() + self.longToBinary() + self.longDirBinary()
+        return int(binString, 2).to_bytes(9, 'big')
+    
+    def packData(self):
+        return struct.pack('9s', self.binaryData())
+    
+    def writeDataToFile(self, filename):
+        with open(filename, 'ab') as file:
+            file.write(self.binaryData())
+
     def print(self):
-        print(f"Time: {self.rawTime}, Lat: {self.convertLat()}, Lat Direction: {self.dLat}, Long: {self.convertLong()}, Long Direction: {self.dLong}")
+        print(f"Time: {self.rawTime}, Lat: {self.rawLat}, Lat Direction: {self.dLat}, Long: {self.rawLong}, Long Direction: {self.dLong}")
 
     def printBinary(self):
         print(f"Time: {self.timeToBinary()}, Lat: {self.latToBinary()}, Lat Direction: {self.latDirBinary()}, Long: {self.longToBinary()}, Long Direction: {self.longDirBinary()}")
 
 
 while True:
-    time.sleep(0.1)
+    time.sleep(60)
     raw_line = uart.readline()
     message, truth = filterLines(raw_line)
     if not truth:
@@ -113,5 +125,4 @@ while True:
     except Exception as e:
         print(f"got error: {e}")
         continue
-    info.print()
-    info.printBinary()
+    info.writeDataToFile("locations")
