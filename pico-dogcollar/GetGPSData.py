@@ -128,4 +128,4 @@ while True:
         continue
     info.writeDataToFile("locations")
     print("added to file")
-    time.sleep(10)
+    time.sleep(60)
