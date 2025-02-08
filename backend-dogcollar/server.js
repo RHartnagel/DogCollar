@@ -18,7 +18,7 @@ app.listen( 8080, () => {
 })
 
 app.get("/getLatestData", (req, res) => {
-    //This will get hit whenever the pico is ready to send coordinate data
+    // This will get hit whenever the pico is ready to send coordinate data
     // const binaryData = req.body       this is what will be done once the transfer is actually setup, just using this part for now.
     const binaryData = Buffer.from([0x07, 0xF8, 0xA9, 0xE5, 0x28, 0xA9, 0x41, 0x22, 0x43])
 
@@ -35,21 +35,10 @@ app.get("/getLatestData", (req, res) => {
     const minutes = Math.floor(remainingSeconds / 60)
     const seconds = remainingSeconds % 60
 
-    const latDir = ""
-    const longDir = ""
+    var latitude = parseInt(latBinary, 2) / 100000
+    var longitude = parseInt(longBinary, 2) / 100000
+    latitude = latDirBinary === "1" ? -latitude : latitude
+    longitude = longDirBinary === "1" ? -longitude : longitude
 
-    if (latDirBinary === "1" ) { 
-        latDir = "S" 
-    } else { 
-        latDir = "N"
-    }
-    if (longDirBinary === "1" ) { 
-        longDir = "W"
-    } else {
-        longDir = "E" 
-    }
-
-    res.json({"hours": hours, "minutes": minutes, "seconds": seconds, })
-
-    
+    res.json({"hours": hours, "minutes": minutes, "seconds": seconds, "latitude": latitude, "longitude": longitude })
 })
