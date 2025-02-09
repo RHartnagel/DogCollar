@@ -5,5 +5,19 @@
     "database": "mydatabase",
     "host": "database",
     "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "password",
+    "database": "mydatabase",
+    "host": "database",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "password",
+    "database": "mydatabase",
+    "host": "database",
+    "dialect": "postgres"
   }
 }
