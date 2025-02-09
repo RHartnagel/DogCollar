@@ -1,0 +1,48 @@
+volumes:
+  postgres-dogcollar:
+
+services:
+  database:
+    image: postgres:latest
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      database:
+        condition: service_healthy
+
+  backend:
+    build: ./backend-dogcollar
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend-dogcollar:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@database:5432/mydatabase
+
+  frontend:
+    build: ./frontend-dogcollar
+    ports:
+      - "5173:5173"  # Vite's default port
+    volumes:
+      - ./frontend-dogcollar:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
