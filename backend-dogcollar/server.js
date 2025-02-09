@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express()
+const db = require("./models")
 
 const cors = require("cors")
 const corsOptions = {
@@ -13,8 +14,13 @@ app.get("/", (req, res) => {
     res.json({"test": ["Robbie", "Max", "Ethan"]})
 })
 
-app.listen( 8080, () => {
-    console.log("Server started on port 8080.")
+// Start Express server after database has initialized
+db.sequelize.sync().then(() => {
+    app.listen(8080, () => {
+        console.log("🚀 Server started on port 8080.");
+    })
+}).catch((err) => {
+    console.error("❌ Failed to sync database before starting server:", err);
 })
 
 app.get("/getLatestData", (req, res) => {

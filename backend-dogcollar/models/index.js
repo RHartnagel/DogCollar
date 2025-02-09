@@ -1,5 +1,7 @@
 'use strict';
 
+console.log("🚀 Initializing Sequelize and Database Connection...");
+
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
@@ -20,6 +22,11 @@ if (process.env.DATABASE_URL) {
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
+
+// Authenticate the database connection
+sequelize.authenticate()
+  .then(() => console.log("✅ Database connection successful"))
+  .catch((err) => console.error("❌ Database connection failed:", err));
 
 // Import models dynamically
 fs.readdirSync(__dirname)
@@ -47,9 +54,8 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 // Sync database structure with existing PostgreSQL tables
-sequelize
-  .sync({ alter: true }) // Matches Sequelize models with the existing database
-  .then(() => console.log('✅ Database synced with Sequelize'))
+sequelize.sync({ alter: true }) // Matches Sequelize models with the existing database
+  .then(() => console.log('✅ Sequelize models are synced with the database'))
   .catch((err) => console.error('❌ Sync error:', err));
 
 module.exports = db;
